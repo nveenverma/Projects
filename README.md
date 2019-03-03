@@ -35,3 +35,9 @@
 [Answering Business Questions](Answering%20Business%20Questions)| SQL
 [Designing & Creating a Database](Designing%20&%20Creating%20a%20Database)|SQL
 [Storing Storm Data](Storing%20Storm%20Data)| PostgreSQL
+
+## Machine Learning
+
+| Project Name | Languages/Tools Used |
+|-|-|
+[Predicting Car Prices](Predicting%20Car%20Prices)| Pandas, Scikit-Learn, KNN
