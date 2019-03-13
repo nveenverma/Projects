@@ -12,6 +12,7 @@
 [Star Wars Survey](Star%20Wars%20Survey)|Pandas
 [Analysing NYC High School Data](Analyzing%20NYC%20High%20School%20Data)|Pandas
 [Exploring Ebay Car Sales Data](Exploring%20Ebay%20Car%20Sales%20Data)|Pandas & NumPy
+[Exploring StackOverflow](Exploring%20StackOverflow)|Pandas, BeautifulSoup & Matplotlib
 [Analysing CIA Factbook (SQLite & Python)](Analysing%20CIA%20Factbook)|SQLite & Python
 
 ## Data Visualisation
