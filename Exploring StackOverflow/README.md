@@ -1,6 +1,6 @@
-# Exploring Stack Overflow
+# *Exploring Stack Overflow*
 
-***In this project, we will list down the most tagged languages in StackOverflow.<br>We will also list top voted question alongwith it's top answer for each language.***
+***In this mini-project, we will list down the most tagged languages in StackOverflow.<br>We will also list top voted question alongwith it's top answer for each language.***
 
 To do so, we will scrape the `StackOverflow Website's Tags` [Page](https://stackoverflow.com/tags?tab=popular).
 
@@ -8,10 +8,12 @@ To do so, we will scrape the `StackOverflow Website's Tags` [Page](https://stack
 
 Following Packages are used:
 
-- *BeautifulSoup - Scraping*
 - *Pandas - DataFrame (Consolidating Data)*
-- *Matplotlib - Visualization*
+- *Matplotlib - Visualisation*
+- *BeautifulSoup - Scraping*
 
+---
+> Tags Per Language<br><br>
 ![Comparison](comparison.png)
 
 ---
