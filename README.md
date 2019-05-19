@@ -1,4 +1,4 @@
-# Projects
+![Projects](portfolio.png)
 
 ## Machine Learning
 
