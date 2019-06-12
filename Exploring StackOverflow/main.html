@@ -1,0 +1,1138 @@
+
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="Scraping-StackOverflow">Scraping StackOverflow<a class="anchor-link" href="#Scraping-StackOverflow">&#182;</a></h1><p>In this project, we will scrap StackOverflow website and list:</p>
+<ul>
+<li><a id='Goal1'>Languages most mentioned/tagged along with their tag counts</a></li>
+<li><a id='Goal2'>Questions with most votes along with with their attributes (summary, tags, number of votes, answers and views).</a></li>
+</ul>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Let's import all the required libraries and packages</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[1]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span> <span class="c1"># linear algebra</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span> <span class="c1"># data processing, CSV file I/O (e.g. pd.read_csv)</span>
+<span class="kn">import</span> <span class="nn">requests</span> <span class="c1"># Getting Webpage content</span>
+<span class="kn">from</span> <span class="nn">bs4</span> <span class="k">import</span> <span class="n">BeautifulSoup</span> <span class="k">as</span> <span class="n">bs</span> <span class="c1"># Scraping webpages</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span> <span class="c1"># Visualization</span>
+<span class="kn">import</span> <span class="nn">matplotlib.style</span> <span class="k">as</span> <span class="nn">style</span> <span class="c1"># For styling plots</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="k">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">mp</span> <span class="c1"># For Saving plots as images</span>
+
+<span class="c1"># For displaying plots in jupyter notebook</span>
+<span class="o">%</span><span class="k">matplotlib</span> inline 
+
+<span class="n">style</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s1">&#39;fivethirtyeight&#39;</span><span class="p">)</span> <span class="c1"># matplotlib Style </span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="Web-Scraping-Basics">Web Scraping Basics<a class="anchor-link" href="#Web-Scraping-Basics">&#182;</a></h1><p>Before starting our project, we need to understand few basics regarding Web Pages and Web Scraping.</p>
+<p>When we visit a page, our browser makes a request to a web server. Most of the times, this request is a <a href="https://realpython.com/lessons/the-get-request/">GET Request</a>. Our web browser then receives a bunch of files, typically (HTML, CSS, JavaScript). HTML contains the content, CSS &amp; JavaScript tell browser how to render the webpage. So, we will be mainly interested in the HTML file.</p>
+<h3 id="HTML:">HTML:<a class="anchor-link" href="#HTML:">&#182;</a></h3><p>HTML has elements called <a href="https://www.w3schools.com/html/html_elements.asp">tags</a>, which help in differentiating different parts of a HTML Document. Different types of tags are:</p>
+<ul>
+<li><code>html</code> - all content is inside this tag</li>
+<li><code>head</code> - contains title and other related files</li>
+<li><code>body</code> - contains main cotent to be displayed on the webpage</li>
+<li><code>div</code> - division or area of a page</li>
+<li><code>p</code> - paragraph</li>
+<li><code>a</code> - links</li>
+</ul>
+<p>We will get our content inside the body tag and use p and a tags for getting paragraphs and links.</p>
+<p>HTML also has <a href="https://www.codecademy.com/articles/classes-vs-ids">class and id properties</a>. These properties give HTML elements names and makes it easier for us to refer to a particular element. <a id='classes'>`Class`</a> can be shared among multiple elements and an element can have moer then one class. Whereas, <a id='id'>`id`</a> needs to be unique for a given element and can be used just once in the document.</p>
+<h3 id="Requests">Requests<a class="anchor-link" href="#Requests">&#182;</a></h3><p>The requests module in python lets us easily download pages from the web.<br>
+We can request contents of a webpage by using <code>requests.get()</code>, passing in target link as a parameter. This will give us a <a href="https://realpython.com/python-requests/#the-response">response object</a>.</p>
+<h3 id="Beautiful-Soup">Beautiful Soup<a class="anchor-link" href="#Beautiful-Soup">&#182;</a></h3><p><a href="https://www.crummy.com/software/BeautifulSoup/bs4/doc/">Beautiful Soup</a> library helps us parse contents of the webpage in an easy to use manner. It provides us with some very useful methods and attributes like:</p>
+<ul>
+<li><code>find()</code>, <code>select_one()</code> - retuns first occurence of the tag object that matches our filter</li>
+<li><code>find_all()</code>, <code>select()</code> - retuns a list of the tag object that matches our filter</li>
+<li><code>children</code> - provides list of direct nested tags of the given paramter/tag</li>
+</ul>
+<p>These methods help us in extracting specific portions from the webpage.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="Plan-of-Attack-(For-Goal-1)">Plan of Attack (For Goal 1)<a class="anchor-link" href="#Plan-of-Attack-(For-Goal-1)">&#182;</a></h1><p>Now that we know the basics of Web Scraping, we will move towards our <a href="#Goal1">Goal 1</a>.<br> 
+However, before moving forward, it's best practice to make a list of steps to follow:</p>
+<ul>
+<li><a id='1.1'>1. Download Webpage from stackoverflow</a></li>
+<li><a id='1.2'>2. Parse the document content into BeautifulSoup</a></li>
+<li><a id='1.3'>3. Extract Top Languages</a></li>
+<li><a id='1.4'>4. Extract their respective Tag Counts</a></li>
+<li><a id='1.5'>5. Put the two lists together and plot them</a></li>
+</ul>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Downloading-Tags-page--from-StackOverflow"><a href="#1.1">Downloading Tags page  from StackOverflow</a><a class="anchor-link" href="#Downloading-Tags-page--from-StackOverflow">&#182;</a></h3><p>We will download the <a href="https://stackoverflow.com/tags">tags page</a> from <a href="https://stackoverflow.com/">stackoverflow</a>, where it has all the languages listed with their tag count.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[2]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Using requests module for </span>
+<span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;https://stackoverflow.com/tags&#39;</span><span class="p">)</span>
+
+<span class="c1"># Getting status of the request</span>
+<span class="c1"># 200 status code means our request was successful</span>
+<span class="c1"># 404 status code means that the resource you were looking for was not found</span>
+<span class="n">response</span><span class="o">.</span><span class="n">status_code</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[2]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>200</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Parsing-the-document-into-Beautiful-Soup"><a href="#1.2">Parsing the document into Beautiful Soup</a><a class="anchor-link" href="#Parsing-the-document-into-Beautiful-Soup">&#182;</a></h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[3]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Parsing html data using BeautifulSoup</span>
+<span class="n">soup</span> <span class="o">=</span> <span class="n">bs</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">,</span> <span class="s1">&#39;html.parser&#39;</span><span class="p">)</span>
+
+<span class="c1"># body </span>
+<span class="n">body</span> <span class="o">=</span> <span class="n">soup</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;body&#39;</span><span class="p">)</span>
+
+<span class="c1"># printing the object type of body</span>
+<span class="nb">type</span><span class="p">(</span><span class="n">body</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[3]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>bs4.element.Tag</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Extract-Top-Languages"><a href="#1.3">Extract Top Languages</a><a class="anchor-link" href="#Extract-Top-Languages">&#182;</a></h3><p>In order to acheive this, we need to understand HTML structure of the document that we have. And then, narrow down to our element of interest.</p>
+<p>One way of doing this would be manually searching the webpage (hint: print <code>body</code> variable from above).<br>
+Second method, is to use the browser's Developr Tools. We will use this second one.</p>
+<p>On Chrome, open <a href="http://stackoverflow.com/tags?tab=popular">tags page</a> and right-click on the language name (shown in top left) and choose <strong>Inspect</strong>.</p>
+<p><img src="tags.png" alt="Image for Reference">
+<em><center>Image for Reference</center></em></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We can see that the Language name is inside <code>a</code> tag, which in turn is inside a lot of div tags. This seems, difficult to extract. Here, the <a href="#classes">class</a> and <a href="#id">id</a>, we spoke about earlier comes to our rescue.</p>
+<p>If we look more closely in the image above, we can see that the <code>a</code> tag has a class of <code>post-tag</code>. Using this class along with <code>a</code> tag, we can extract all the language links in a list.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[10]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">lang_tags</span> <span class="o">=</span> <span class="n">body</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">class_</span><span class="o">=</span><span class="s1">&#39;post-tag&#39;</span><span class="p">)</span>
+<span class="n">lang_tags</span><span class="p">[:</span><span class="mi">5</span><span class="p">]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[10]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>[&lt;a class=&#34;post-tag&#34; href=&#34;/questions/tagged/javascript&#34; rel=&#34;tag&#34; title=&#34;show questions tagged &#39;javascript&#39;&#34;&gt;javascript&lt;/a&gt;,
+ &lt;a class=&#34;post-tag&#34; href=&#34;/questions/tagged/java&#34; rel=&#34;tag&#34; title=&#34;show questions tagged &#39;java&#39;&#34;&gt;java&lt;/a&gt;,
+ &lt;a class=&#34;post-tag&#34; href=&#34;/questions/tagged/c%23&#34; rel=&#34;tag&#34; title=&#34;show questions tagged &#39;c#&#39;&#34;&gt;c#&lt;/a&gt;,
+ &lt;a class=&#34;post-tag&#34; href=&#34;/questions/tagged/php&#34; rel=&#34;tag&#34; title=&#34;show questions tagged &#39;php&#39;&#34;&gt;php&lt;/a&gt;,
+ &lt;a class=&#34;post-tag&#34; href=&#34;/questions/tagged/android&#34; rel=&#34;tag&#34; title=&#34;show questions tagged &#39;android&#39;&#34;&gt;&lt;img alt=&#34;&#34; class=&#34;sponsor-tag-img&#34; height=&#34;16&#34; src=&#34;//i.stack.imgur.com/bk9VA.png&#34; width=&#34;18&#34;/&gt;android&lt;/a&gt;]</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Using <a href="https://towardsdatascience.com/python-basics-list-comprehensions-631278f22c40">list comprehension</a>, we can now extract all the language names.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[11]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">languages</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="o">.</span><span class="n">text</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">lang_tags</span><span class="p">]</span>
+<span class="n">languages</span><span class="p">[:</span><span class="mi">5</span><span class="p">]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[11]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>[&#39;javascript&#39;, &#39;java&#39;, &#39;c#&#39;, &#39;php&#39;, &#39;android&#39;]</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Extract-Tag-Counts"><a href="#1.4">Extract Tag Counts</a><a class="anchor-link" href="#Extract-Tag-Counts">&#182;</a></h3><p>To extract tag counts, we need to follow a process similar to the above one.</p>
+<p>On Chrome, open <a href="http://stackoverflow.com/tags">tags page</a> and right-click on the tag count, next to the top language (shown in top left) and choose <strong>Inspect</strong>.</p>
+<p><img src="tag_count.png" alt="Image for Reference">
+<em><center>Image for Reference</center></em></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Here, the tag counts are inside <code>span</code> tag, with a class of <code>item-multiplier-count</code>. Using this class along with <code>span</code> tag, we will extract all the tag count spans in a list.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[12]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">tag_counts</span> <span class="o">=</span> <span class="n">body</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="s1">&#39;span&#39;</span><span class="p">,</span> <span class="n">class_</span><span class="o">=</span><span class="s1">&#39;item-multiplier-count&#39;</span><span class="p">)</span>
+<span class="n">tag_counts</span><span class="p">[:</span><span class="mi">5</span><span class="p">]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[12]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>[&lt;span class=&#34;item-multiplier-count&#34;&gt;1823013&lt;/span&gt;,
+ &lt;span class=&#34;item-multiplier-count&#34;&gt;1556297&lt;/span&gt;,
+ &lt;span class=&#34;item-multiplier-count&#34;&gt;1319324&lt;/span&gt;,
+ &lt;span class=&#34;item-multiplier-count&#34;&gt;1288920&lt;/span&gt;,
+ &lt;span class=&#34;item-multiplier-count&#34;&gt;1199384&lt;/span&gt;]</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Using <a href="https://towardsdatascience.com/python-basics-list-comprehensions-631278f22c40">list comprehension</a>, we can now extract all the Tag Counts.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[13]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">no_of_tags</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">text</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">tag_counts</span><span class="p">]</span>
+<span class="n">no_of_tags</span><span class="p">[:</span><span class="mi">5</span><span class="p">]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[13]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>[1823013, 1556297, 1319324, 1288920, 1199384]</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Putting-the-two-lists-together-and-plotting-them"><a href="#1.5">Putting the two lists together and plotting them</a><a class="anchor-link" href="#Putting-the-two-lists-together-and-plotting-them">&#182;</a></h3><p>To put the two lists together, we will follow these steps:</p>
+<ul>
+<li>Use <a href="https://stackoverflow.com/a/209854">dict(zip)</a> to combine lists into a dictionary.</li>
+<li>Convert dictionary into a Pandas dataFrame using <a href="https://wellsr.com/python/pandas-dataframe-from-dictionary-list-and-more/">pandas.DataFrame.from_dict</a>.</li>
+<li>Reset index and give proper column names.</li>
+</ul>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[8]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">a</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">languages</span><span class="p">,</span> <span class="n">no_of_tags</span><span class="p">))</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">orient</span><span class="o">=</span><span class="s1">&#39;index&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+<span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Languages&#39;</span><span class="p">,</span> <span class="s1">&#39;Tag Count&#39;</span><span class="p">]</span>
+<span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[8]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Languages</th>
+      <th>Tag Count</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>javascript</td>
+      <td>1823013</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>java</td>
+      <td>1556297</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>c#</td>
+      <td>1319324</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>php</td>
+      <td>1288920</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>android</td>
+      <td>1199384</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Now, we will plot the Top Languages along with their Tag Counts.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[15]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">height</span><span class="o">=</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Tag Count&#39;</span><span class="p">][:</span><span class="mi">10</span><span class="p">],</span> <span class="n">x</span><span class="o">=</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Languages&#39;</span><span class="p">][:</span><span class="mi">10</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">rotation</span><span class="o">=</span><span class="mi">90</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Languages&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Tag Counts&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_png output_subarea ">
+<img src="data:image/png;base64,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
+"
+>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="Plan-of-Attack-(For-Goal-2)">Plan of Attack (For Goal 2)<a class="anchor-link" href="#Plan-of-Attack-(For-Goal-2)">&#182;</a></h1><p>Now that we have collected data using web scraping one time, it won't be difficult the next time.<br> 
+In <a href="#Goal2">Goal 2</a> part, we have to list questions with most votes along with their attributes, like:</p>
+<ul>
+<li>Summary</li>
+<li>Tags</li>
+<li>Number of Votes</li>
+<li>Number of Answers</li>
+<li>Number of Views</li>
+</ul>
+<p>I would suggest giving it a try on your own, then come here for matching your solution.</p>
+<p><em>Note: Their can be many ways to scrape data, so you should explore and try to get data in your own way.</em></p>
+<p>Similar to previous step we will make a list of steps to act upon:</p>
+<ul>
+<li><a id='2.1'>1. Download Webpage from stackoverflow</a></li>
+<li><a id='2.2'>2. Parse the document content into BeautifulSoup</a></li>
+<li><a id='2.3'>3. Extract Top Questions</a></li>
+<li><a id='2.4'>4. Extract their respective Summary</a></li>
+<li><a id='2.5'>5. Extract their respective no. of votes, answers and views</a></li>
+<li><a id='2.6'>5. Put all of them together in a dataframe</a></li>
+</ul>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Downloading-Tags-page--from-StackOverflow"><a href="#2.1">Downloading Tags page  from StackOverflow</a><a class="anchor-link" href="#Downloading-Tags-page--from-StackOverflow">&#182;</a></h3><p>We will download the <a href="https://stackoverflow.com/questions?sort=votes&amp;pagesize=50">questions page</a> from <a href="https://stackoverflow.com/">stackoverflow</a>, where it has all the top voted questions listed.<br></p>
+<p>Here, I've appended <code>?sort=votes&amp;pagesize=50</code> to the end of the defualt questions URL, to get a list of top 50 questions.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[17]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Using requests module for </span>
+<span class="n">response1</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;https://stackoverflow.com/questions?sort=votes&amp;pagesize=50&#39;</span><span class="p">)</span>
+
+<span class="c1"># Getting status of the request</span>
+<span class="c1"># 200 status code means our request was successful</span>
+<span class="c1"># 404 status code means that the resource you were looking for was not found</span>
+<span class="n">response1</span><span class="o">.</span><span class="n">status_code</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[17]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>200</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[35]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">body1</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s2">&quot;div p&quot;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[35]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>[&lt;p class=&#34;mb0 lh-lg&#34;&gt;
+                     By using our site, you acknowledge that you have read and understand our &lt;a class=&#34;s-link s-link__inherit td-underline fc-white&#34; href=&#34;https://stackoverflow.com/legal/cookie-policy&#34; target=&#34;_blank&#34;&gt;Cookie Policy&lt;/a&gt;, &lt;a class=&#34;s-link s-link__inherit td-underline fc-white&#34; href=&#34;https://stackoverflow.com/legal/privacy-policy&#34; target=&#34;_blank&#34;&gt;Privacy Policy&lt;/a&gt;, and our &lt;a class=&#34;s-link s-link__inherit td-underline fc-white&#34; href=&#34;https://stackoverflow.com/legal/terms-of-service/public&#34; target=&#34;_blank&#34;&gt;Terms of Service&lt;/a&gt;.
+                 &lt;/p&gt;,
+ &lt;p class=&#34;mb0&#34;&gt;Q&amp;amp;A for work. A dedicated place to share your team’s knowledge.&lt;/p&gt;,
+ &lt;p class=&#34;mt-auto mb24&#34;&gt;
+ site design / logo © 2019 Stack Exchange Inc; user contributions licensed under &lt;a href=&#34;https://creativecommons.org/licenses/by-sa/3.0/&#34; rel=&#34;license&#34;&gt;cc by-sa 3.0&lt;/a&gt;
+                             with &lt;a href=&#34;https://stackoverflow.blog/2009/06/25/attribution-required/&#34; rel=&#34;license&#34;&gt;attribution required&lt;/a&gt;.
+                     &lt;span id=&#34;svnrev&#34;&gt;rev 2019.6.11.33950&lt;/span&gt;
+ &lt;/p&gt;]</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Parsing-the-document-into-Beautiful-Soup"><a href="#2.2">Parsing the document into Beautiful Soup</a><a class="anchor-link" href="#Parsing-the-document-into-Beautiful-Soup">&#182;</a></h3><p>In this section, we will use <code>select()</code> and <code>select_one()</code> to return BeautifulSoup objects as per our requierment.</p>
+<p>While <code>find</code> uses tags, <code>select</code> uses CSS Selectors in the filter.</p>
+<p>For example:</p>
+<ul>
+<li><code>p a</code> — finds all a tags inside of a p tag. 
+<pre><code>  soup.select('p a')</code></pre>
+</li>
+<li><code>div.outer-text</code> — finds all div tags with a class of outer-text.</li>
+<li><code>div#first</code> — finds all div tags with an id of first.</li>
+<li><code>body p.outer-text</code> — finds any p tags with a class of outer-text inside of a body tag.</li>
+</ul>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[25]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Parsing html data using BeautifulSoup</span>
+<span class="n">soup1</span> <span class="o">=</span> <span class="n">bs</span><span class="p">(</span><span class="n">response1</span><span class="o">.</span><span class="n">content</span><span class="p">,</span> <span class="s1">&#39;html.parser&#39;</span><span class="p">)</span>
+
+<span class="c1"># body </span>
+<span class="n">body1</span> <span class="o">=</span> <span class="n">soup1</span><span class="o">.</span><span class="n">select_one</span><span class="p">(</span><span class="s1">&#39;body&#39;</span><span class="p">)</span>
+
+<span class="c1"># printing the object type of body</span>
+<span class="nb">type</span><span class="p">(</span><span class="n">body1</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[25]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>bs4.element.Tag</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Extract-Top-Questions"><a href="#2.3">Extract Top Questions</a><a class="anchor-link" href="#Extract-Top-Questions">&#182;</a></h3><p>On Chrome, open <a href="https://stackoverflow.com/questions?sort=votes&amp;pagesize=50">questions page</a> and right-click on the top question and choose <strong>Inspect</strong>.</p>
+<p><img src="questions.png" alt="Image for Reference">
+<em><center>Image for Reference</center></em></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We can see that the question is inside <code>a</code> tag, which  has a class of <code>question-hyperlink</code>. Using this class along with <code>a</code> tag, we can extract all the question links in a list.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[33]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">question_links</span> <span class="o">=</span> <span class="n">body1</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s2">&quot;a.question-hyperlink&quot;</span><span class="p">)</span>
+<span class="n">question_links</span><span class="p">[:</span><span class="mi">5</span><span class="p">]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[33]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>[&lt;a class=&#34;question-hyperlink&#34; href=&#34;/questions/11227809/why-is-processing-a-sorted-array-faster-than-processing-an-unsorted-array&#34;&gt;Why is processing a sorted array faster than processing an unsorted array?&lt;/a&gt;,
+ &lt;a class=&#34;question-hyperlink&#34; href=&#34;/questions/927358/how-do-i-undo-the-most-recent-local-commits-in-git&#34;&gt;How do I undo the most recent local commits in Git?&lt;/a&gt;,
+ &lt;a class=&#34;question-hyperlink&#34; href=&#34;/questions/2003505/how-do-i-delete-a-git-branch-locally-and-remotely&#34;&gt;How do I delete a Git branch locally and remotely?&lt;/a&gt;,
+ &lt;a class=&#34;question-hyperlink&#34; href=&#34;/questions/292357/what-is-the-difference-between-git-pull-and-git-fetch&#34;&gt;What is the difference between &#39;git pull&#39; and &#39;git fetch&#39;?&lt;/a&gt;,
+ &lt;a class=&#34;question-hyperlink&#34; href=&#34;/questions/477816/what-is-the-correct-json-content-type&#34;&gt;What is the correct JSON content type?&lt;/a&gt;]</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Using <a href="https://towardsdatascience.com/python-basics-list-comprehensions-631278f22c40">list comprehension</a>, we can now extract all the questions.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[34]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">questions</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="o">.</span><span class="n">text</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">question_links</span><span class="p">]</span>
+<span class="n">questions</span><span class="p">[:</span><span class="mi">5</span><span class="p">]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[34]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>[&#39;Why is processing a sorted array faster than processing an unsorted array?&#39;,
+ &#39;How do I undo the most recent local commits in Git?&#39;,
+ &#39;How do I delete a Git branch locally and remotely?&#39;,
+ &#34;What is the difference between &#39;git pull&#39; and &#39;git fetch&#39;?&#34;,
+ &#39;What is the correct JSON content type?&#39;]</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Extract-Summary"><a href="#2.4">Extract Summary</a><a class="anchor-link" href="#Extract-Summary">&#182;</a></h3><p>On Chrome, open <a href="https://stackoverflow.com/questions?sort=votes&amp;pagesize=50">questions page</a> and right-click on summary of the top question and choose <strong>Inspect</strong>.</p>
+<p><img src="summary.png" alt="Image for Reference">
+<em><center>Image for Reference</center></em></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We can see that the question is inside <code>div</code> tag, which  has a class of <code>excerpt</code>. Using this class along with <code>div</code> tag, we can extract all the question links in a list.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[42]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">summary_divs</span> <span class="o">=</span> <span class="n">body1</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s2">&quot;div.excerpt&quot;</span><span class="p">)</span>
+<span class="n">summary_divs</span><span class="p">[:</span><span class="mi">5</span><span class="p">]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[42]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>[&lt;div class=&#34;excerpt&#34;&gt;
+             Here is a piece of C++ code that shows some very peculiar behavior. For some strange reason, sorting the data miraculously makes the code almost six times faster:
+ 
+ #include &amp;lt;algorithm&amp;gt;
+ #include &amp;amp;...
+         &lt;/div&gt;, &lt;div class=&#34;excerpt&#34;&gt;
+             I accidentally committed the wrong files to Git, but I haven&#39;t pushed the commit to the server yet.
+ 
+ How can I undo those commits from the local repository?
+         &lt;/div&gt;, &lt;div class=&#34;excerpt&#34;&gt;
+             I want to delete a branch both locally and remotely.
+ 
+ Failed Attempts to Delete Remote Branch:
+ 
+ $ git branch -d remotes/origin/bugfix
+ error: branch &#39;remotes/origin/bugfix&#39; not found.
+ 
+ $ git branch -d ...
+         &lt;/div&gt;, &lt;div class=&#34;excerpt&#34;&gt;
+             Moderator Note: Given that this question has already had sixty-seven answers posted to it (some of them deleted), consider whether or not you are contributing anything new before posting another one.
+ ...
+         &lt;/div&gt;, &lt;div class=&#34;excerpt&#34;&gt;
+             I&#39;ve been messing around with JSON for some time, just pushing it out as text and it hasn&#39;t hurt anybody (that I know of), but I&#39;d like to start doing things properly.
+ 
+ I have seen so many purported &#34;...
+         &lt;/div&gt;]</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Using <a href="https://towardsdatascience.com/python-basics-list-comprehensions-631278f22c40">list comprehension</a>, we can now extract all the questions.</p>
+<p>Here, we will also use <a href="https://www.programiz.com/python-programming/methods/string/strip">strip()</a> method on each div's text. This is to remove both leading and trailing unwanted characters from a string.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[45]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">summaries</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">summary_divs</span><span class="p">]</span>
+<span class="n">summaries</span><span class="p">[:</span><span class="mi">5</span><span class="p">]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[45]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>[&#39;Here is a piece of C++ code that shows some very peculiar behavior. For some strange reason, sorting the data miraculously makes the code almost six times faster:\n\n#include &lt;algorithm&gt;\n#include &amp;...&#39;,
+ &#34;I accidentally committed the wrong files to Git, but I haven&#39;t pushed the commit to the server yet.\n\nHow can I undo those commits from the local repository?&#34;,
+ &#34;I want to delete a branch both locally and remotely.\n\nFailed Attempts to Delete Remote Branch:\n\n$ git branch -d remotes/origin/bugfix\nerror: branch &#39;remotes/origin/bugfix&#39; not found.\n\n$ git branch -d ...&#34;,
+ &#39;Moderator Note: Given that this question has already had sixty-seven answers posted to it (some of them deleted), consider whether or not you are contributing anything new before posting another one.\r\n...&#39;,
+ &#39;I\&#39;ve been messing around with JSON for some time, just pushing it out as text and it hasn\&#39;t hurt anybody (that I know of), but I\&#39;d like to start doing things properly.\n\nI have seen so many purported &#34;...&#39;]</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[50]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">summaries</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Here is a piece of C++ code that shows some very peculiar behavior. For some strange reason, sorting the data miraculously makes the code almost six times faster:
+
+#include &lt;algorithm&gt;
+#include &amp;...
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Extract-Number-of-votes,-answers-and-views"><a href="#2.4">Extract Number of votes, answers and views</a><a class="anchor-link" href="#Extract-Number-of-votes,-answers-and-views">&#182;</a></h3><p>On Chrome, open <a href="https://stackoverflow.com/questions?sort=votes&amp;pagesize=50">questions page</a> and right-click on summary of the top question and choose <strong>Inspect</strong>.</p>
+<p><img src="summary.png" alt="Image for Reference">
+<em><center>Image for Reference</center></em></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We can see that the question is inside <code>div</code> tag, which  has a class of <code>excerpt</code>. Using this class along with <code>div</code> tag, we can extract all the question links in a list.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[42]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">summary_divs</span> <span class="o">=</span> <span class="n">body1</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s2">&quot;div.excerpt&quot;</span><span class="p">)</span>
+<span class="n">summary_divs</span><span class="p">[:</span><span class="mi">5</span><span class="p">]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[42]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>[&lt;div class=&#34;excerpt&#34;&gt;
+             Here is a piece of C++ code that shows some very peculiar behavior. For some strange reason, sorting the data miraculously makes the code almost six times faster:
+ 
+ #include &amp;lt;algorithm&amp;gt;
+ #include &amp;amp;...
+         &lt;/div&gt;, &lt;div class=&#34;excerpt&#34;&gt;
+             I accidentally committed the wrong files to Git, but I haven&#39;t pushed the commit to the server yet.
+ 
+ How can I undo those commits from the local repository?
+         &lt;/div&gt;, &lt;div class=&#34;excerpt&#34;&gt;
+             I want to delete a branch both locally and remotely.
+ 
+ Failed Attempts to Delete Remote Branch:
+ 
+ $ git branch -d remotes/origin/bugfix
+ error: branch &#39;remotes/origin/bugfix&#39; not found.
+ 
+ $ git branch -d ...
+         &lt;/div&gt;, &lt;div class=&#34;excerpt&#34;&gt;
+             Moderator Note: Given that this question has already had sixty-seven answers posted to it (some of them deleted), consider whether or not you are contributing anything new before posting another one.
+ ...
+         &lt;/div&gt;, &lt;div class=&#34;excerpt&#34;&gt;
+             I&#39;ve been messing around with JSON for some time, just pushing it out as text and it hasn&#39;t hurt anybody (that I know of), but I&#39;d like to start doing things properly.
+ 
+ I have seen so many purported &#34;...
+         &lt;/div&gt;]</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Using <a href="https://towardsdatascience.com/python-basics-list-comprehensions-631278f22c40">list comprehension</a>, we can now extract all the questions.</p>
+<p>Here, we will also use <a href="https://www.programiz.com/python-programming/methods/string/strip">strip()</a> method on each div's text. This is to remove both leading and trailing unwanted characters from a string.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[45]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">summaries</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">summary_divs</span><span class="p">]</span>
+<span class="n">summaries</span><span class="p">[:</span><span class="mi">5</span><span class="p">]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[45]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>[&#39;Here is a piece of C++ code that shows some very peculiar behavior. For some strange reason, sorting the data miraculously makes the code almost six times faster:\n\n#include &lt;algorithm&gt;\n#include &amp;...&#39;,
+ &#34;I accidentally committed the wrong files to Git, but I haven&#39;t pushed the commit to the server yet.\n\nHow can I undo those commits from the local repository?&#34;,
+ &#34;I want to delete a branch both locally and remotely.\n\nFailed Attempts to Delete Remote Branch:\n\n$ git branch -d remotes/origin/bugfix\nerror: branch &#39;remotes/origin/bugfix&#39; not found.\n\n$ git branch -d ...&#34;,
+ &#39;Moderator Note: Given that this question has already had sixty-seven answers posted to it (some of them deleted), consider whether or not you are contributing anything new before posting another one.\r\n...&#39;,
+ &#39;I\&#39;ve been messing around with JSON for some time, just pushing it out as text and it hasn\&#39;t hurt anybody (that I know of), but I\&#39;d like to start doing things properly.\n\nI have seen so many purported &#34;...&#39;]</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[50]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">summaries</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Here is a piece of C++ code that shows some very peculiar behavior. For some strange reason, sorting the data miraculously makes the code almost six times faster:
+
+#include &lt;algorithm&gt;
+#include &amp;...
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span> 
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+ 
+
