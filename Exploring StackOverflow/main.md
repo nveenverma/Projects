@@ -6,24 +6,9 @@ In this project, we will be scraping StackOverflow website and:
 - [Goal 1: List Most mentioned/tagged languages  along with their tag counts](#Goal1)
 - [Goal 2: List Most voted questions along with with their attributes (votes, summary, tags, number of votes, answers and views)](#Goal2)
 
-We will divide our project into these two goals.
+We will divide our project into the above mentioned two goals.
 
-Let's import all the required libraries and packages
-
-
-```python
-import numpy as np # linear algebra
-import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
-import requests # Getting Webpage content
-from bs4 import BeautifulSoup as bs # Scraping webpages
-import matplotlib.pyplot as plt # Visualization
-import matplotlib.style as style # For styling plots
-
-# For displaying plots in jupyter notebook
-%matplotlib inline 
-
-style.use('fivethirtyeight') # matplotlib Style 
-```
+Before starting our project, we need to understand few basics regarding Web Scraping.
 
 # Web Scraping Basics
 
@@ -60,16 +45,36 @@ These methods help us in extracting specific portions from the webpage.
 
 For e.g. We want to scrap points of teams on a league table. In such a scenario, we can go to each element and extract its value. Or else, we can find a common thread (like **same class, same parent + same element type**) between all the points. And then, pass that common thread as an argument to BeautifulSoup. BeautifulSoup will then extract and return the elements to us.
 
-# Plan of Attack (For Goal 1)
+# Goal 1: Listing most tagged Languages
 
-Now that we know the basics of Web Scraping, we will move towards our [Goal 1](#Goal1).<br> 
-However, before moving forward, it's best practice to make a list of steps to follow:
+Now that we know the basics of Web Scraping, we will move towards our first goal.
+
+In Goal 1, we have to list most tagged Languages along with their Tag Count. First, lets make a list of steps to follow:
+
 - [1. Download Webpage from stackoverflow](#1.1)
 - [2. Parse the document content into BeautifulSoup](#1.2)
 - [3. Extract Top Languages](#1.3)
 - [4. Extract their respective Tag Counts](#1.4)
 - [5. Put all code together and join the two lists](#1.5)
 - [6. Plot Data](#1.6)
+
+Let's import all the required libraries and packages
+
+
+```python
+import numpy as np # linear algebra
+import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
+import requests # Getting Webpage content
+from bs4 import BeautifulSoup as bs # Scraping webpages
+import matplotlib.pyplot as plt # Visualization
+import matplotlib.style as style # For styling plots
+from matplotlib import pyplot as mp # For Saving plots as images
+
+# For displaying plots in jupyter notebook
+%matplotlib inline 
+
+style.use('fivethirtyeight') # matplotlib Style 
+```
 
 ### <a id='1.1'>Downloading Tags page  from StackOverflow</a>
 
@@ -119,10 +124,10 @@ type(body)
 In order to acheive this, we need to understand HTML structure of the document that we have. And then, narrow down to our element of interest.
 
 
-One way of doing this would be manually searching the webpage (hint: print `body` variable from above).<br>
-Second method, is to use the browser's Developr Tools. We will use this second one.
+One way of doing this would be manually searching the webpage (hint: print `body` variable from above and search through it).<br>
+Second method, is to use the browser's Developr Tools. 
 
-On Chrome, open [tags page](http://stackoverflow.com/tags?tab=popular) and right-click on the language name (shown in top left) and choose **Inspect**.
+We will use this second one. On Chrome, open [tags page](http://stackoverflow.com/tags?tab=popular) and right-click on the language name (shown in top left) and choose **Inspect**.
 
 ![Image for Reference](https://github.com/nveenverma/Projects/blob/master/Exploring%20StackOverflow/tags.png?raw=true)
 *<center>Image for Reference</center>*
@@ -134,21 +139,18 @@ If we look more closely in the image above, we can see that the `a` tag has a cl
 
 ```python
 lang_tags = body.find_all('a', class_='post-tag')
-lang_tags[:5]
+lang_tags[:2]
 ```
 
 
 
 
     [<a class="post-tag" href="/questions/tagged/javascript" rel="tag" title="show questions tagged 'javascript'">javascript</a>,
-     <a class="post-tag" href="/questions/tagged/java" rel="tag" title="show questions tagged 'java'">java</a>,
-     <a class="post-tag" href="/questions/tagged/c%23" rel="tag" title="show questions tagged 'c#'">c#</a>,
-     <a class="post-tag" href="/questions/tagged/php" rel="tag" title="show questions tagged 'php'">php</a>,
-     <a class="post-tag" href="/questions/tagged/android" rel="tag" title="show questions tagged 'android'"><img alt="" class="sponsor-tag-img" height="16" src="//i.stack.imgur.com/bk9VA.png" width="18"/>android</a>]
+     <a class="post-tag" href="/questions/tagged/java" rel="tag" title="show questions tagged 'java'">java</a>]
 
 
 
-Using [list comprehension](https://towardsdatascience.com/python-basics-list-comprehensions-631278f22c40), we can now extract all the language names.
+Next, using [list comprehension](https://towardsdatascience.com/python-basics-list-comprehensions-631278f22c40), we will extract all the language names.
 
 
 ```python
@@ -165,7 +167,7 @@ languages[:5]
 
 ### <a id='1.4'>Extract Tag Counts</a>
 
-To extract tag counts, we need to follow a process similar to the above one.
+To extract tag counts, we will follow the same process.
 
 On Chrome, open [tags page](http://stackoverflow.com/tags) and right-click on the tag count, next to the top language (shown in top left) and choose **Inspect**.
 
@@ -177,21 +179,18 @@ Here, the tag counts are inside `span` tag, with a class of `item-multiplier-cou
 
 ```python
 tag_counts = body.find_all('span', class_='item-multiplier-count')
-tag_counts[:5]
+tag_counts[:2]
 ```
 
 
 
 
-    [<span class="item-multiplier-count">1824019</span>,
-     <span class="item-multiplier-count">1557041</span>,
-     <span class="item-multiplier-count">1319948</span>,
-     <span class="item-multiplier-count">1289364</span>,
-     <span class="item-multiplier-count">1199920</span>]
+    [<span class="item-multiplier-count">1824582</span>,
+     <span class="item-multiplier-count">1557391</span>]
 
 
 
-Using [list comprehension](https://towardsdatascience.com/python-basics-list-comprehensions-631278f22c40), we can now extract all the Tag Counts.
+Next, using [list comprehension](https://towardsdatascience.com/python-basics-list-comprehensions-631278f22c40), we will extract all the Tag Counts.
 
 
 ```python
@@ -202,47 +201,42 @@ no_of_tags[:5]
 
 
 
-    [1824019, 1557041, 1319948, 1289364, 1199920]
+    [1824582, 1557391, 1320273, 1289585, 1200130]
 
 
 
 ### <a id='1.5'>Put all code together and join the two lists</a>
 
-We will use [Pandas.DataFrame](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html) to put the two lists together. 
-
-To make a DataFrame, we need to pass both the lists (in dictionary form) as argument to our function.
+We will use [Pandas.DataFrame](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html) to put the two lists together. <br>In order to make a DataFrame, we need to pass both the lists (in dictionary form) as argument to our function.
 
 
 ```python
+# Function to check, if there is any error in length of the extracted bs4 object
+def error_checking(list_name, length):
+    if (len(list_name) != length):
+        print("Error in {} parsing, length not equal to {}!!!".format(list_name, length))
+        return -1
+    else:
+        pass
+    
+
 def get_top_languages(url):
     # Using requests module for downloading webpage content
     response = requests.get(url)
 
     # Parsing html data using BeautifulSoup
     soup = bs(response.content, 'html.parser')
-
-    # body 
     body = soup.find('body')
 
     # Extracting Top Langauges
     lang_tags = body.find_all('a', class_='post-tag')
-    
-    # Error Checking
-    if len(lang_tags) != 36:
-        print("Error in lang_tags parsing, languages not equal to 36!!!")
-        return -1
-    
-    languages = [i.text for i in lang_tags]
+    error_checking(lang_tags, 36)                                     # Error Checking
+    languages = [i.text for i in lang_tags]                           # Languages List
 
-    # Extracting Top Languages' Tag Counts
+    # Extracting Tag Counts
     tag_counts = body.find_all('span', class_='item-multiplier-count')
-    
-    # Error Checking
-    if len(tag_counts) != 36:
-        print("Error in tag_counts parsing, languages not equal to 36!!!")
-        return -1
-    
-    no_of_tags = [int(i.text) for i in tag_counts]
+    error_checking(tag_counts, 36)                                    # Error Checking
+    no_of_tags = [int(i.text) for i in tag_counts]                    # Tag Counts List
 
     # Putting the two lists together
     df = pd.DataFrame({'Languages':languages,
@@ -290,27 +284,27 @@ df.head()
     <tr>
       <th>0</th>
       <td>javascript</td>
-      <td>1824019</td>
+      <td>1824582</td>
     </tr>
     <tr>
       <th>1</th>
       <td>java</td>
-      <td>1557041</td>
+      <td>1557391</td>
     </tr>
     <tr>
       <th>2</th>
       <td>c#</td>
-      <td>1319948</td>
+      <td>1320273</td>
     </tr>
     <tr>
       <th>3</th>
       <td>php</td>
-      <td>1289364</td>
+      <td>1289585</td>
     </tr>
     <tr>
       <th>4</th>
       <td>android</td>
-      <td>1199920</td>
+      <td>1200130</td>
     </tr>
   </tbody>
 </table>
@@ -327,29 +321,27 @@ plt.bar(height=df['Tag Count'][:10], x=df['Languages'][:10])
 plt.xticks(rotation=90)
 plt.xlabel('Languages')
 plt.ylabel('Tag Counts')
+plt.savefig('lang_vs_tag_counts.png', bbox_inches='tight')
 plt.show()
 ```
 
 
-![png](main_files/main_24_0.png)
+![png](output_24_0.png)
 
 
-# <a id='Goal2'>Plan of Attack (For Goal 2)</a>
+# <a id='Goal2'>Goal 2: Listing most voted Questions</a>
 
 Now that we have collected data using web scraping one time, it won't be difficult the next time.<br> 
 In Goal 2 part, we have to list questions with most votes along with their attributes, like:
-- Summary
+> - Summary
 - Tags
 - Number of Votes
 - Number of Answers
 - Number of Views
 
-I would suggest giving it a try on your own, then come here for matching your solution.
+I would suggest giving it a try on your own, then come here to see my solution.
 
-
-*Note: Their can be many ways to scrape data, so you should explore and try to get data in your own way.*
-
-Similar to previous step we will make a list of steps to act upon:
+Similar to previous step, we will make a list of steps to act upon:
 
 - [1. Download Webpage from stackoverflow](#2.1)
 - [2. Parse the document content into BeautifulSoup](#2.2)
@@ -384,21 +376,19 @@ response1.status_code
 
 
 
-### <a id='2.2'>Parsing the document into Beautiful Soup</a>
+### A different Scraping Function
 
-In this section, we will use `select()` and `select_one()` to return BeautifulSoup objects as per our requierment.
-
-While `find` uses tags, `select` uses CSS Selectors in the filter.
+In this section, we will use `select()` and `select_one()` to return BeautifulSoup objects as per our requierment. While `find_all` uses tags, `select` uses CSS Selectors in the filter. I personally tend to use the latter one more.
 
 For example:
-
 - `p a` — finds all a tags inside of a p tag. 
-        soup.select('p a')
+> ```soup.select('p a')```
+
 - `div.outer-text` — finds all div tags with a class of outer-text.
 - `div#first` — finds all div tags with an id of first.
 - `body p.outer-text` — finds any p tags with a class of outer-text inside of a body tag.
 
-
+### <a id='2.2'>Parsing the document into Beautiful Soup</a>
 
 
 ```python
@@ -433,40 +423,30 @@ Taking cue from our previous Goal, we can use this class along with `a` tag, to 
 
 ```python
 question_links = body1.select("h3 a.question-hyperlink")
-print(len(question_links))
-question_links[:5]
+question_links[:2]
 ```
-
-    50
-
 
 
 
 
     [<a class="question-hyperlink" href="/questions/11227809/why-is-processing-a-sorted-array-faster-than-processing-an-unsorted-array">Why is processing a sorted array faster than processing an unsorted array?</a>,
-     <a class="question-hyperlink" href="/questions/927358/how-do-i-undo-the-most-recent-local-commits-in-git">How do I undo the most recent local commits in Git?</a>,
-     <a class="question-hyperlink" href="/questions/2003505/how-do-i-delete-a-git-branch-locally-and-remotely">How do I delete a Git branch locally and remotely?</a>,
-     <a class="question-hyperlink" href="/questions/292357/what-is-the-difference-between-git-pull-and-git-fetch">What is the difference between 'git pull' and 'git fetch'?</a>,
-     <a class="question-hyperlink" href="/questions/477816/what-is-the-correct-json-content-type">What is the correct JSON content type?</a>]
+     <a class="question-hyperlink" href="/questions/927358/how-do-i-undo-the-most-recent-local-commits-in-git">How do I undo the most recent local commits in Git?</a>]
 
 
 
-Using [list comprehension](https://towardsdatascience.com/python-basics-list-comprehensions-631278f22c40), we can now extract all the questions.
+[List comprehension](https://towardsdatascience.com/python-basics-list-comprehensions-631278f22c40), to extract all the questions.
 
 
 ```python
 questions = [i.text for i in question_links]
-questions[:5]
+questions[:2]
 ```
 
 
 
 
     ['Why is processing a sorted array faster than processing an unsorted array?',
-     'How do I undo the most recent local commits in Git?',
-     'How do I delete a Git branch locally and remotely?',
-     "What is the difference between 'git pull' and 'git fetch'?",
-     'What is the correct JSON content type?']
+     'How do I undo the most recent local commits in Git?']
 
 
 
@@ -482,11 +462,9 @@ We can see that the question is inside `div` tag, which  has a class of `excerpt
 
 ```python
 summary_divs = body1.select("div.excerpt")
-print(len(summary_divs))
 print(summary_divs[0])
 ```
 
-    50
     <div class="excerpt">
                 Here is a piece of C++ code that shows some very peculiar behavior. For some strange reason, sorting the data miraculously makes the code almost six times faster:
     
@@ -495,7 +473,7 @@ print(summary_divs[0])
             </div>
 
 
-Using [list comprehension](https://towardsdatascience.com/python-basics-list-comprehensions-631278f22c40), we can now extract all the questions. 
+[List comprehension](https://towardsdatascience.com/python-basics-list-comprehensions-631278f22c40), to extract all the questions. 
 
 Here, we will also use [strip()](https://www.programiz.com/python-programming/methods/string/strip) method on each div's text. This is to remove both leading and trailing unwanted characters from a string.
 
@@ -524,19 +502,15 @@ eed to store.
 
 To extract **tags per question**, we will follow a multi-step process:
 
-1. As shown in figure, individual tags are in a third layer, under two nested div tags. With the upper div tag, only having unique class (`summary`).
+* As shown in figure, individual tags are in a third layer, under two nested div tags. With the upper div tag, only having unique class (`summary`).
     - First, we will extract div with `summary`class.
     - Now notice our target div is third child overall and second `div` child of the above extracted object. Here, we can use `nth-of-type()` method to extract this 2nd `div` child. Usage of this method is very easy and few exmaples can be found [here](https://gist.github.com/yoki/b7f2fcef64c893e307c4c59303ead19a#file-20_search-py). This method will extract the 2nd `div` child directly, without extracting `summary div` first.
 
 
 ```python
 tags_divs = body1.select("div.summary > div:nth-of-type(2)")
-print(len(tags_divs))
 tags_divs[0]
 ```
-
-    50
-
 
 
 
@@ -547,7 +521,7 @@ tags_divs[0]
 
 
 
-2. Now, we can use [list comprehension](https://towardsdatascience.com/python-basics-list-comprehensions-631278f22c40) to extract `a` tags in a list, grouped per question.
+* Now, we can use [list comprehension](https://towardsdatascience.com/python-basics-list-comprehensions-631278f22c40) to extract `a` tags in a list, grouped per question.
 
 
 ```python
@@ -568,7 +542,7 @@ a_tags_list[0]
 
 
 
-3. Now we will run a for loop for going through each question and use [list comprehension](https://towardsdatascience.com/python-basics-list-comprehensions-631278f22c40) inside the for loop, to extract the tags names.
+* Now we will run a for loop for going through each question and use [list comprehension](https://towardsdatascience.com/python-basics-list-comprehensions-631278f22c40) inside it, to extract the tags names.
 
 
 ```python
@@ -577,19 +551,13 @@ tags = []
 for a_group in a_tags_list:
     tags.append([a.text for a in a_group])
 
-print(len(tags))
-tags[:3]
+tags[0]
 ```
 
-    50
 
 
 
-
-
-    [['java', 'c++', 'performance', 'optimization', 'branch-prediction'],
-     ['git', 'version-control', 'git-commit', 'undo'],
-     ['git', 'git-branch', 'git-remote']]
+    ['java', 'c++', 'performance', 'optimization', 'branch-prediction']
 
 
 
@@ -606,15 +574,13 @@ On Chrome, open [questions page](https://stackoverflow.com/questions?sort=votes&
 
 ```python
 vote_spans = body1.select("span.vote-count-post strong")
-print(len(vote_spans))
-print(vote_spans[:5])
+print(vote_spans[:2])
 ```
 
-    50
-    [<strong>23104</strong>, <strong>19687</strong>, <strong>15316</strong>, <strong>11026</strong>, <strong>9716</strong>]
+    [<strong>23111</strong>, <strong>19690</strong>]
 
 
-Using [list comprehension](https://towardsdatascience.com/python-basics-list-comprehensions-631278f22c40), we can now extract vote counts. 
+[List comprehension](https://towardsdatascience.com/python-basics-list-comprehensions-631278f22c40), to extract vote counts. 
 
 
 ```python
@@ -625,25 +591,30 @@ no_of_votes[:5]
 
 
 
-    [23104, 19687, 15316, 11026, 9716]
+    [23111, 19690, 15321, 11030, 9718]
 
 
+
+I'm not going to post images to extract last two attributes
 
 ### No. of Answers 
+
 - They can be found by using `div` tag along with `status` class and nested `strong` tags. Here, we don't use `answered-accepted` because its not common among all questions, few of them (whose answer are not accepted) have the class - `answered`. 
 
 
 ```python
 answer_divs = body1.select("div.status strong")
-print(len(answer_divs))
-print(answer_divs[:5])
+answer_divs[:2]
 ```
 
-    50
-    [<strong>22</strong>, <strong>78</strong>, <strong>38</strong>, <strong>40</strong>, <strong>34</strong>]
 
 
-Using [list comprehension](https://towardsdatascience.com/python-basics-list-comprehensions-631278f22c40), we can now extract answer counts. 
+
+    [<strong>22</strong>, <strong>78</strong>]
+
+
+
+[List comprehension](https://towardsdatascience.com/python-basics-list-comprehensions-631278f22c40), to extract answer counts. 
 
 
 ```python
@@ -665,17 +636,19 @@ no_of_answers[:5]
 
 ```python
 div_views = body1.select("div.supernova")
-print(len(div_views))
-print(div_views[0])
+div_views[0]
 ```
 
-    50
-    <div class="views supernova" title="1,361,956 views">
+
+
+
+    <div class="views supernova" title="1,362,267 views">
         1.4m views
     </div>
 
 
-Using [list comprehension](https://towardsdatascience.com/python-basics-list-comprehensions-631278f22c40), we can now extract vote counts. 
+
+[List comprehension](https://towardsdatascience.com/python-basics-list-comprehensions-631278f22c40), to extract vote counts. 
 
 
 ```python
@@ -688,7 +661,7 @@ no_of_views[:5]
 
 
 
-    [1361956, 7930918, 7005727, 2549437, 2489925]
+    [1362267, 7932952, 7011126, 2550002, 2490787]
 
 
 
@@ -701,93 +674,52 @@ def get_top_questions(url, question_count):
     # Since, stackoverflow, doesn't display any other size questions list
     url = url + "?sort=votes&pagesize={}".format(question_count)
     
-    ##############################
     # Using requests module for downloading webpage content
     response = requests.get(url)
 
-    ##############################
     # Parsing html data using BeautifulSoup
     soup = bs(response.content, 'html.parser')
-
-    # body 
     body = soup.find('body')
 
-    ##############################
     # Extracting Top Questions
     question_links = body1.select("h3 a.question-hyperlink")
+    error_checking(question_links, question_count)                     # Error Checking
+    questions = [i.text for i in question_links]                       # questions list
     
-    # Error Checking
-    if len(question_links) != question_count:
-        print("Error in question_links parsing, questions not equal to {}!!!".format(question_count))
-        print(len(question_links))
-        return -1
-    
-    questions = [i.text for i in question_links]     # questions list
-    
-    ########################################
     # Extracting Summary
     summary_divs = body1.select("div.excerpt")
+    error_checking(summary_divs, question_count)                       # Error Checking
+    summaries = [i.text.strip() for i in summary_divs]                 # summaries list
     
-    # Error Checking
-    if len(summary_divs) != question_count:
-        print("Error in summary_divs parsing, summary of questions not equal to {}!!!".format(question_count))
-        return -1
-    
-    summaries = [i.text.strip() for i in summary_divs]  # summaries list
-    
-    ########################################
     # Extracting Tags
     tags_divs = body1.select("div.summary > div:nth-of-type(2)")
     
-    # Error Checking
-    if len(tags_divs) != question_count:
-        print("Error in tags_divs parsing, tags list of questions not equal to {}!!!".format(question_count))
-        return -1
-    
-    a_tags_list = [i.select('a') for i in tags_divs]  # tag links
+    error_checking(tags_divs, question_count)                          # Error Checking
+    a_tags_list = [i.select('a') for i in tags_divs]                   # tag links
     
     tags = []
 
     for a_group in a_tags_list:
-        tags.append([a.text for a in a_group])        # tags list
+        tags.append([a.text for a in a_group])                         # tags list
     
-    ########################################
     # Extracting Number of votes
     vote_spans = body1.select("span.vote-count-post strong")
+    error_checking(vote_spans, question_count)                         # Error Checking
+    no_of_votes = [int(i.text) for i in vote_spans]                    # votes list
     
-    # Error Checking
-    if len(vote_spans) != question_count:
-        print("Error in vote_spans parsing, votes number list not equal to {}!!!".format(question_count))
-        return -1
-    
-    no_of_votes = [int(i.text) for i in vote_spans]  # votes list
-    
-    ########################################
     # Extracting Number of answers
     answer_divs = body1.select("div.status strong")
+    error_checking(answer_divs, question_count)                        # Error Checking
+    no_of_answers = [int(i.text) for i in answer_divs]                 # answers list
     
-    # Error Checking
-    if len(answer_divs) != question_count:
-        print("Error in answer_divs parsing, answers number list not equal to {}!!!".format(question_count))
-        
-        return -1
-    
-    no_of_answers = [int(i.text) for i in answer_divs]  # answers list
-    
-    ########################################
     # Extracting Number of views
     div_views = body1.select("div.supernova")
     
-    # Error Checking
-    if len(div_views) != question_count:
-        print("Error in div_views parsing, views number list not equal to {}!!!".format(question_count))
-        return -1
-    
+    error_checking(div_views, question_count)                          # Error Checking
     no_of_views = [i['title'] for i in div_views]
     no_of_views = [i[:-6].replace(',', '') for i in no_of_views]
-    no_of_views = [int(i) for i in no_of_views]                  # views list
+    no_of_views = [int(i) for i in no_of_views]                        # views list
     
-    ##########################################
     # Putting all of them together
     df = pd.DataFrame({'question': questions, 
                        'summary': summaries, 
@@ -803,7 +735,9 @@ def get_top_questions(url, question_count):
 
 
 ```python
-df1 = get_top_questions('https://stackoverflow.com/questions', 50)
+URL2 = 'https://stackoverflow.com/questions'
+
+df1 = get_top_questions(URL2, 50)
 df1.head()
 ```
 
@@ -842,45 +776,45 @@ df1.head()
       <td>Why is processing a sorted array faster than p...</td>
       <td>Here is a piece of C++ code that shows some ve...</td>
       <td>[java, c++, performance, optimization, branch-...</td>
-      <td>23104</td>
+      <td>23111</td>
       <td>22</td>
-      <td>1361956</td>
+      <td>1362267</td>
     </tr>
     <tr>
       <th>1</th>
       <td>How do I undo the most recent local commits in...</td>
       <td>I accidentally committed the wrong files to Gi...</td>
       <td>[git, version-control, git-commit, undo]</td>
-      <td>19687</td>
+      <td>19690</td>
       <td>78</td>
-      <td>7930918</td>
+      <td>7932952</td>
     </tr>
     <tr>
       <th>2</th>
       <td>How do I delete a Git branch locally and remot...</td>
       <td>I want to delete a branch both locally and rem...</td>
       <td>[git, git-branch, git-remote]</td>
-      <td>15316</td>
+      <td>15321</td>
       <td>38</td>
-      <td>7005727</td>
+      <td>7011126</td>
     </tr>
     <tr>
       <th>3</th>
       <td>What is the difference between 'git pull' and ...</td>
       <td>Moderator Note: Given that this question has a...</td>
       <td>[git, git-pull, git-fetch]</td>
-      <td>11026</td>
+      <td>11030</td>
       <td>40</td>
-      <td>2549437</td>
+      <td>2550002</td>
     </tr>
     <tr>
       <th>4</th>
       <td>What is the correct JSON content type?</td>
       <td>I've been messing around with JSON for some ti...</td>
       <td>[json, http-headers, content-type]</td>
-      <td>9716</td>
+      <td>9718</td>
       <td>34</td>
-      <td>2489925</td>
+      <td>2490787</td>
     </tr>
   </tbody>
 </table>
@@ -901,11 +835,13 @@ ax[1].set_ylabel('No of Views')
 ax[2].bar(df1.index, df1.no_of_answers)
 ax[2].set_ylabel('No of Answers')
 
+plt.savefig('votes_vs_views_vs_answers.png', bbox_inches='tight')
+
 plt.show()
 ```
 
 
-![png](main_files/main_64_0.png)
+![png](output_65_0.png)
 
 
 Here, we may observe that there is no collinearity between the votes, views and answers related to a question. 
