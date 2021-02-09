@@ -42,3 +42,10 @@
 [Analysing NYC High School Data](Analysing%20NYC%20High%20School%20Data)|Pandas
 [Exploring Ebay Car Sales Data](Exploring%20Ebay%20Car%20Sales%20Data)|Pandas, NumPy & Matplotlib
 [Exploring StackOverflow](Exploring%20StackOverflow)|Pandas, BeautifulSoup & Matplotlib
+
+## Web Development
+
+| &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Project Name &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;| &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Languages/Tools Used &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;|
+|-|-|
+[Slack Clone](http://slack-clone-111220.web.app/)| Material-UI, ReactJS & Firebase
+[Covid-19 Tracker](http://covid19-tracker-171220.web.app/)| ReactJS, Firebase, API
