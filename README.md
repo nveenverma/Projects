@@ -47,5 +47,5 @@
 
 | &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Project Name &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;| &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Languages/Tools Used &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;|
 |-|-|
-[Slack Clone](http://slack-clone-111220.web.app/)| Material-UI, ReactJS & Firebase
-[Covid-19 Tracker](http://covid19-tracker-171220.web.app/)| ReactJS, Firebase, API
+[Slack Clone](http://slack-clone-111220.web.app/)| Material-UI, React & Firebase
+[Covid-19 Tracker](http://covid19-tracker-171220.web.app/)| React, Firebase, API
